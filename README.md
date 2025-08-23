@@ -16,5 +16,3 @@ This library is being built from scratch, similar to **MUI**, but with a unique 
 - ♿ **Accessible** – WCAG & ARIA compliant
 - 📦 **Modular** – Tree-shakable, import only what you need
 - ⚡ **Fast** – Minimal bundle size
-
----
