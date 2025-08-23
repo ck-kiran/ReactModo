@@ -3,12 +3,10 @@
 A **React-based UI component library** built for speed, customization, and accessibility.  
 Currently under **active development**.
 
----
 
 ## 🚧 Status: In Development
 This library is being built from scratch, similar to **MUI**, but with a unique approach to customization and performance.
 
----
 
 ## ✨ Planned Features
 - ⚛️ **React-first** – Fully optimized for React
