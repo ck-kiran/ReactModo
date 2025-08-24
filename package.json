@@ -1,6 +1,6 @@
 {
   "name": "reactmodo",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A **React-based UI component library** built for speed, customization, and accessibility.   Currently under **active development**.",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -16,13 +16,29 @@
     }
   },
   "scripts": {
+    "prepare": "husky",
     "build": "npm run clean && npm run build:esm && npm run build:cjs && npm run build:types",
     "build:esm": "rspack --config rspack.config.esm.js",
     "build:cjs": "rspack --config rspack.config.cjs.js",
     "build:types": "tsc --emitDeclarationOnly --outDir dist/types",
     "clean": "rimraf dist",
     "dev": "rspack serve --config rspack.config.dev.js",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "lint": "eslint src --ext .ts,.tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "type-check": "tsc --noEmit"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write",
+      "eslint"
+    ],
+    "src/**/*.{js,jsx,json,css,md}": [
+      "prettier --write"
+    ]
   },
   "peerDependencies": {
     "react": ">=16.8.0",
@@ -46,10 +62,25 @@
   },
   "homepage": "https://github.com/ck-kiran/ReactBricks#readme",
   "devDependencies": {
+    "@eslint/js": "^9.34.0",
     "@rspack/cli": "^0.4.0",
     "@rspack/core": "^0.4.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.40.0",
+    "@typescript-eslint/parser": "^8.40.0",
+    "eslint": "^9.34.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-perfectionist": "^4.15.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.5",
+    "prettier": "^3.6.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rimraf": "^5.0.0",
