@@ -1,6 +1,6 @@
 # ReactModo
 
-A highly customizable and accessible button component for React applications, part of the ReactModo UI library.
+A highly customizable and accessible component for React applications, part of the ReactModo UI library.
 
 ## Installation
 
