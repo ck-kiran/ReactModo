@@ -1,0 +1,58 @@
+{
+  "name": "reactmodo",
+  "version": "1.0.1",
+  "description": "A **React-based UI component library** built for speed, customization, and accessibility.   Currently under **active development**.",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "npm run clean && npm run build:esm && npm run build:cjs && npm run build:types",
+    "build:esm": "rspack --config rspack.config.esm.js",
+    "build:cjs": "rspack --config rspack.config.cjs.js",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist/types",
+    "clean": "rimraf dist",
+    "dev": "rspack serve --config rspack.config.dev.js",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ck-kiran/ReactBricks.git"
+  },
+  "keywords": [
+    "react",
+    "components",
+    "ui",
+    "rspack"
+  ],
+  "author": "Kiran C",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ck-kiran/ReactBricks/issues"
+  },
+  "homepage": "https://github.com/ck-kiran/ReactBricks#readme",
+  "devDependencies": {
+    "@rspack/cli": "^0.4.0",
+    "@rspack/core": "^0.4.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "rimraf": "^5.0.0",
+    "typescript": "^5.0.0"
+  }
+}
