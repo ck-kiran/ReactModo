@@ -2,103 +2,103 @@ import React from 'react';
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  // Preset variants (optional - can be overridden by custom styles)
-  variant?:
-    | 'primary'
-    | 'secondary'
-    | 'danger'
-    | 'success'
-    | 'warning'
-    | 'ghost'
-    | 'outline';
-  size?: 'xs' | 'small' | 'medium' | 'large' | 'xl';
-
-  // Custom styling props
-  backgroundColor?: string;
-  textColor?: string;
-  borderColor?: string;
-  borderWidth?: string;
-  borderRadius?: string;
-  hoverBackgroundColor?: string;
-  hoverTextColor?: string;
-  hoverBorderColor?: string;
-  focusRingColor?: string;
-
-  // Layout and spacing
-  padding?: string;
-  width?: string;
-  height?: string;
-
-  // States
-  loading?: boolean;
-  disabled?: boolean;
   active?: boolean;
-
-  // Icons and content
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
-  loadingIcon?: React.ReactNode;
-  children: React.ReactNode;
+  ariaDescribedBy?: string;
 
   // Accessibility
   ariaLabel?: string;
-  ariaDescribedBy?: string;
   ariaPressed?: boolean;
-  role?: string;
+  // Custom styling props
+  backgroundColor?: string;
+  borderColor?: string;
+  borderRadius?: string;
+  borderWidth?: string;
+  children: React.ReactNode;
+  disabled?: boolean;
+  focusRingColor?: string;
 
+  height?: string;
+  hoverBackgroundColor?: string;
+  hoverBorderColor?: string;
+
+  hoverTextColor?: string;
+  // Icons and content
+  leftIcon?: React.ReactNode;
+  // States
+  loading?: boolean;
+
+  loadingIcon?: React.ReactNode;
+  onBlur?: (e: React.FocusEvent<HTMLButtonElement>) => void;
+  onFocus?: (e: React.FocusEvent<HTMLButtonElement>) => void;
   // Event handlers
   onKeyDown?: (e: React.KeyboardEvent<HTMLButtonElement>) => void;
-  onFocus?: (e: React.FocusEvent<HTMLButtonElement>) => void;
-  onBlur?: (e: React.FocusEvent<HTMLButtonElement>) => void;
+
+  // Layout and spacing
+  padding?: string;
+  rightIcon?: React.ReactNode;
+  role?: string;
+  size?: 'large' | 'medium' | 'small' | 'xl' | 'xs';
+
+  textColor?: string;
+  // Preset variants (optional - can be overridden by custom styles)
+  variant?:
+    | 'danger'
+    | 'ghost'
+    | 'outline'
+    | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'warning';
+  width?: string;
 }
 
 export const Button: React.FC<ButtonProps> = ({
-  // Preset props
-  variant = 'primary',
-  size = 'medium',
-
-  // Custom styling
-  backgroundColor,
-  textColor,
-  borderColor,
-  borderWidth,
-  borderRadius,
-  hoverBackgroundColor,
-  hoverTextColor,
-  hoverBorderColor,
-  focusRingColor,
-
-  // Layout
-  padding,
-  width,
-  height,
-
-  // States
-  loading = false,
-  disabled = false,
   active = false,
-
-  // Content
-  leftIcon,
-  rightIcon,
-  loadingIcon = '⟳',
-  children,
+  ariaDescribedBy,
 
   // Accessibility
   ariaLabel,
-  ariaDescribedBy,
   ariaPressed,
-  role = 'button',
+  // Custom styling
+  backgroundColor,
+  borderColor,
+  borderRadius,
+  borderWidth,
+  children,
+  // Standard props
+  className = '',
+  disabled = false,
 
-  // Events
-  onKeyDown,
-  onFocus,
+  focusRingColor,
+  height,
+  hoverBackgroundColor,
+
+  hoverBorderColor,
+  hoverTextColor,
+  // Content
+  leftIcon,
+
+  // States
+  loading = false,
+  loadingIcon = '⟳',
   onBlur,
   onClick,
 
-  // Standard props
-  className = '',
+  onFocus,
+  // Events
+  onKeyDown,
+  // Layout
+  padding,
+  rightIcon,
+
+  role = 'button',
+  size = 'medium',
   style = {},
+  textColor,
+
+  // Preset props
+  variant = 'primary',
+  width,
   ...props
 }) => {
   // Base styles that are always applied
@@ -107,29 +107,29 @@ export const Button: React.FC<ButtonProps> = ({
 
   // Preset variant styles
   const variantStyles = {
-    primary:
-      'bg-blue-600 hover:bg-blue-700 text-white border border-transparent focus:ring-blue-500',
-    secondary:
-      'bg-gray-200 hover:bg-gray-300 text-gray-900 border border-gray-300 focus:ring-gray-500',
     danger:
       'bg-red-600 hover:bg-red-700 text-white border border-transparent focus:ring-red-500',
-    success:
-      'bg-green-600 hover:bg-green-700 text-white border border-transparent focus:ring-green-500',
-    warning:
-      'bg-yellow-500 hover:bg-yellow-600 text-white border border-transparent focus:ring-yellow-500',
     ghost:
       'bg-transparent hover:bg-gray-100 text-gray-700 border border-transparent focus:ring-gray-500',
     outline:
       'bg-transparent hover:bg-gray-50 text-gray-700 border border-gray-300 focus:ring-gray-500',
+    primary:
+      'bg-blue-600 hover:bg-blue-700 text-white border border-transparent focus:ring-blue-500',
+    secondary:
+      'bg-gray-200 hover:bg-gray-300 text-gray-900 border border-gray-300 focus:ring-gray-500',
+    success:
+      'bg-green-600 hover:bg-green-700 text-white border border-transparent focus:ring-green-500',
+    warning:
+      'bg-yellow-500 hover:bg-yellow-600 text-white border border-transparent focus:ring-yellow-500',
   };
 
   // Preset size styles
   const sizeStyles = {
-    xs: 'px-2 py-1 text-xs rounded',
-    small: 'px-3 py-1.5 text-sm rounded-md',
-    medium: 'px-4 py-2 text-base rounded-md',
     large: 'px-6 py-3 text-lg rounded-lg',
+    medium: 'px-4 py-2 text-base rounded-md',
+    small: 'px-3 py-1.5 text-sm rounded-md',
     xl: 'px-8 py-4 text-xl rounded-lg',
+    xs: 'px-2 py-1 text-xs rounded',
   };
 
   // Build classes - start with base, add variant and size if no custom overrides
@@ -194,29 +194,29 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
-      className={classes.trim()}
-      style={customStyles}
-      disabled={isDisabled}
-      aria-label={ariaLabel}
       aria-describedby={ariaDescribedBy}
+      aria-label={ariaLabel}
       aria-pressed={ariaPressed}
-      role={role}
-      onKeyDown={handleKeyDown}
-      onFocus={onFocus}
+      className={classes.trim()}
+      disabled={isDisabled}
       onBlur={onBlur}
       onClick={handleClick}
+      onFocus={onFocus}
+      onKeyDown={handleKeyDown}
+      role={role}
+      style={customStyles}
       {...props}
     >
       {/* Left icon */}
       {leftIcon && !loading && (
-        <span className="flex-shrink-0" aria-hidden="true">
+        <span aria-hidden="true" className="flex-shrink-0">
           {leftIcon}
         </span>
       )}
 
       {/* Loading icon */}
       {loading && (
-        <span className="flex-shrink-0 animate-spin" aria-hidden="true">
+        <span aria-hidden="true" className="flex-shrink-0 animate-spin">
           {loadingIcon}
         </span>
       )}
@@ -226,7 +226,7 @@ export const Button: React.FC<ButtonProps> = ({
 
       {/* Right icon */}
       {rightIcon && !loading && (
-        <span className="flex-shrink-0" aria-hidden="true">
+        <span aria-hidden="true" className="flex-shrink-0">
           {rightIcon}
         </span>
       )}
