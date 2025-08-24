@@ -1,9 +1,10 @@
+/* eslint-disable react-refresh/only-export-components */
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+
 import { Button } from '../index';
 
 const App: React.FC = () => {
-
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold mb-8">Component Library Demo</h1>
@@ -13,26 +14,26 @@ const App: React.FC = () => {
         <section>
           <h2 className="text-2xl font-semibold mb-4">Buttons</h2>
           <div className="flex gap-4 flex-wrap">
-            <Button variant="primary" size="large">
+            <Button size="large" variant="primary">
               Click me
             </Button>
 
             <Button
+              _focusRingColor="#8B5CF6"
+              _hoverBackgroundColor="#7C3AED"
+              ariaLabel="Submit form"
               backgroundColor="#8B5CF6"
-              textColor="white"
               borderColor="#7C3AED"
               borderRadius="12px"
-              padding="12px 24px"
-              hoverBackgroundColor="#7C3AED"
-              focusRingColor="#8B5CF6"
-              ariaLabel="Submit form"
               leftIcon={<span>→</span>}
               onClick={() => console.log('Clicked!')}
+              padding="12px 24px"
+              textColor="white"
             >
               Custom Button
             </Button>
 
-            <Button loading={true} leftIcon={<span>💾</span>}>
+            <Button leftIcon={<span>💾</span>} loading={true}>
               Saving...
             </Button>
           </div>

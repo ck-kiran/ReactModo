@@ -25,7 +25,7 @@ Import and use the Button component in your React app:
 
 ```jsx
 import React from 'react';
-import { Button } from 'reactbricks'; // Updated package name
+import { Button } from 'reactmodo';
 
 const App = () => {
   const handleClick = () => {
@@ -42,43 +42,27 @@ const App = () => {
         Primary Button
       </Button>
       <Button
-        disabled={true}
+        backgroundColor="#8B5CF6"
+        textColor="white"
+        borderColor="#7C3AED"
+        borderRadius="12px"
+        padding="12px 24px"
+        hoverBackgroundColor="#7C3AED"
+        focusRingColor="#8B5CF6"
+        ariaLabel="Submit form"
+        leftIcon={<span>→</span>}
+        onClick={() => console.log('Clicked!')}
       >
-        Disabled Button
+        Custom Button
       </Button>
-      <Button
-        loading={true}
-      >
-        Loading Button
-      </Button>
-      <Button
-        loading={true}
-        loadingText="Submitting..."
-      >
-        Custom Loading
-      </Button>
+      
+      
     </div>
   );
 };
 
 export default App;
 ```
-
-## Props
-
-Customize the Button with the following props:
-
-| Prop         | Type                          | Default      | Description                                                         |
-| ------------ | ----------------------------- | ------------ | ------------------------------------------------------------------- |
-| `children`   | `React.ReactNode`             | **required** | The content displayed inside the button (e.g., text, icons).        |
-| `onClick`    | `React.MouseEventHandler`     | `undefined`  | Function called when the button is clicked.                         |
-| `variant`    | `'primary' | 'secondary' | 'danger'` | `'primary'`  | Visual style of the button.                                         |
-| `size`       | `'small' | 'medium' | 'large'` | `'medium'`   | Size of the button.                                                 |
-| `disabled`   | `boolean`                     | `false`      | If `true`, disables the button.                                     |
-| `loading`    | `boolean`                     | `false`      | If `true`, shows a loading indicator and disables the button.       |
-| `loadingText`| `string`                      | `'Loading...'` | Text to display when the button is in a loading state.              |
-| `className`  | `string`                      | `''`         | Custom CSS class for the button.                                    |
-| `...rest`    | `React.ButtonHTMLAttributes<HTMLButtonElement>` |              | Any other standard HTML button attributes.                          |
 
 ## License
 
