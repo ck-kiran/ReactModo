@@ -1,10 +1,15 @@
+/* eslint-disable react-refresh/only-export-components */
 import React from 'react';
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  _focusRingColor?: string;
+  _hoverBackgroundColor?: string;
+
+  _hoverBorderColor?: string;
+  _hoverTextColor?: string;
   active?: boolean;
   ariaDescribedBy?: string;
-
   // Accessibility
   ariaLabel?: string;
   ariaPressed?: boolean;
@@ -12,16 +17,12 @@ export interface ButtonProps
   backgroundColor?: string;
   borderColor?: string;
   borderRadius?: string;
+
   borderWidth?: string;
   children: React.ReactNode;
   disabled?: boolean;
-  focusRingColor?: string;
 
   height?: string;
-  hoverBackgroundColor?: string;
-  hoverBorderColor?: string;
-
-  hoverTextColor?: string;
   // Icons and content
   leftIcon?: React.ReactNode;
   // States
@@ -53,9 +54,13 @@ export interface ButtonProps
 }
 
 export const Button: React.FC<ButtonProps> = ({
+  _focusRingColor,
+  _hoverBackgroundColor,
+
+  _hoverBorderColor,
+  _hoverTextColor,
   active = false,
   ariaDescribedBy,
-
   // Accessibility
   ariaLabel,
   ariaPressed,
@@ -63,18 +68,14 @@ export const Button: React.FC<ButtonProps> = ({
   backgroundColor,
   borderColor,
   borderRadius,
+
   borderWidth,
   children,
   // Standard props
   className = '',
+
   disabled = false,
-
-  focusRingColor,
   height,
-  hoverBackgroundColor,
-
-  hoverBorderColor,
-  hoverTextColor,
   // Content
   leftIcon,
 
@@ -174,7 +175,7 @@ export const Button: React.FC<ButtonProps> = ({
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       if (onClick && !disabled && !loading) {
-        onClick(e as any);
+        onClick(e as unknown as React.MouseEvent<HTMLButtonElement>);
       }
     }
 

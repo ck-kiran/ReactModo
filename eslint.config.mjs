@@ -62,7 +62,7 @@ export default [
       // TypeScript specific rules
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['error', { 'argsIgnorePattern': '^_', 'varsIgnorePattern': '^_' }],
       
       // React Hooks rules
       'react-hooks/rules-of-hooks': 'error',

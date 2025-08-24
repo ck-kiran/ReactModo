@@ -2,6 +2,12 @@
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
-
+# Run lint-staged and capture the exit code
+if npx lint-staged; then
+    echo "✅ Linting and formatting completed successfully"
+else
+    echo "❌ Linting failed - commit aborted"
+    exit 1
+fi
 
 echo "🚀 Pre-commit checks passed!"

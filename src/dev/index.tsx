@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -18,12 +19,12 @@ const App: React.FC = () => {
             </Button>
 
             <Button
+              _focusRingColor="#8B5CF6"
+              _hoverBackgroundColor="#7C3AED"
               ariaLabel="Submit form"
               backgroundColor="#8B5CF6"
               borderColor="#7C3AED"
               borderRadius="12px"
-              focusRingColor="#8B5CF6"
-              hoverBackgroundColor="#7C3AED"
               leftIcon={<span>→</span>}
               onClick={() => console.log('Clicked!')}
               padding="12px 24px"
