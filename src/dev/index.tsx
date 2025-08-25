@@ -131,6 +131,14 @@ const App: React.FC = () => {
                 Link
               </Button>
               <Button fullWidth>Full Width</Button>
+              <Button
+                backgroundColor="#8A2BE2"
+                borderRadius="999px"
+                padding="10px 25px"
+                textColor="white"
+              >
+                Fully Custom
+              </Button>
             </div>
           </div>
         </div>
