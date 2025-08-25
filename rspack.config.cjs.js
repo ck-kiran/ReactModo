@@ -12,4 +12,5 @@ module.exports = {
     clean: true,
   },
   mode: 'production',
+  target: 'node', // Better for CJS builds
 };

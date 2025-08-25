@@ -15,4 +15,5 @@ module.exports = {
     outputModule: true,
   },
   mode: 'production',
+  target: 'web', // Better for ESM builds
 };

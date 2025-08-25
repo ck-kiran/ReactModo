@@ -1,25 +1,60 @@
+// rspack.config.dev.js
 const path = require('path');
-const baseConfig = require('./rspack.config.base');
+const { HtmlRspackPlugin } = require('@rspack/core');
 
 module.exports = {
-  ...baseConfig,
-  entry: './src/dev/index.tsx', // Development entry point
+  entry: {
+    main: './src/dev/index.tsx',
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js', '.jsx'],
+  },
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: {
+          loader: 'builtin:swc-loader',
+          options: {
+            jsc: {
+              parser: {
+                syntax: 'typescript',
+                tsx: true,
+              },
+              transform: {
+                react: {
+                  runtime: 'automatic',
+                },
+              },
+            },
+          },
+        },
+        exclude: /node_modules/,
+      },
+    ],
+  },
+  plugins: [
+    new HtmlRspackPlugin({
+      template: './src/dev/index.html',
+      filename: 'index.html',
+    }),
+  ],
   output: {
     path: path.resolve(__dirname, 'dist/dev'),
-    filename: 'bundle.js',
+    filename: '[name].bundle.js',
     clean: true,
+    publicPath: '/',
   },
   mode: 'development',
-  devtool: 'source-map',
   devServer: {
     port: 3000,
     open: true,
     hot: true,
+    historyApiFallback: true,
+    static: {
+      directory: path.join(__dirname, 'src/dev'),
+    },
   },
-  plugins: [
-    new (require('@rspack/core')).HtmlRspackPlugin({
-      template: './src/dev/index.html',
-    }),
-  ],
-  externals: {}, // Don't externalize for development
+  externals: {}, // Don't externalize React in dev mode
+  devtool: 'eval-source-map',
 };
