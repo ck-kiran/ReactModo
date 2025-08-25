@@ -1,0 +1,66 @@
+name: Publish to npm
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Determine version bump
+        id: version
+        run: |
+          # Get all commits since last release
+          COMMITS=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline || git log --oneline)
+
+          if echo "$COMMITS" | grep -i "breaking\|major"; then
+            echo "BUMP=major" >> $GITHUB_OUTPUT
+          elif echo "$COMMITS" | grep -i "feat\|feature\|minor"; then
+            echo "BUMP=minor" >> $GITHUB_OUTPUT
+          else
+            echo "BUMP=patch" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Configure git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        id: bump
+        run: |
+          OLD_VERSION=$(node -p "require('./package.json').version")
+          yarn version --${{ steps.version.outputs.BUMP }} --no-git-tag-version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "OLD_VERSION=$OLD_VERSION" >> $GITHUB_OUTPUT
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Commit version bump
+        run: |
+          git add package.json
+          git commit -m "chore: bump version to v${{ steps.bump.outputs.NEW_VERSION }}"
+          git tag v${{ steps.bump.outputs.NEW_VERSION }}
+          git push origin main
+          git push origin v${{ steps.bump.outputs.NEW_VERSION }}
+
+      - name: Publish to npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
