@@ -75,6 +75,10 @@ const KEYFRAMES = `
     0% { left: -100%; }
     100% { left: 100%; }
   }
+  @keyframes reactmodo-hover-reveal {
+    0% { transform: translateY(100%); }
+    100% { transform: translateY(0%); }
+  }
 `;
 
 let stylesInjected = false;
@@ -145,6 +149,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     const [isSubscribed, setIsSubscribed] = React.useState(false);
     const [hoverPosition, setHoverPosition] = React.useState({ x: 0, y: 0 });
+    const [isHovered, setIsHovered] = React.useState(false);
     const buttonRef = React.useRef<HTMLButtonElement>(null);
 
     // Merge refs
@@ -231,7 +236,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       return {
         alignItems: 'center',
         border: '1px solid transparent',
-        borderRadius: '6px',
+        borderRadius: borderRadius || '6px',
         cursor: isDisabled ? 'not-allowed' : 'pointer',
         display: 'inline-flex',
         fontFamily: 'inherit',
@@ -248,6 +253,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         transition: 'all 0.2s ease-in-out',
         width: fullWidth ? '100%' : width || 'auto',
         ...(padding ? { padding } : { padding: sizeStyles.padding }),
+        ...(borderWidth && { borderWidth }),
+        ...(height && { height }),
         ...(!disableElevation && {
           boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
         }),
@@ -256,14 +263,26 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             '0 0 0 2px rgba(59, 130, 246, 0.5), 0 0 0 4px rgba(59, 130, 246, 0.1)',
         }),
       };
-    }, [size, padding, isDisabled, fullWidth, width, disableElevation, active]);
+    }, [
+      size,
+      padding,
+      isDisabled,
+      fullWidth,
+      width,
+      disableElevation,
+      active,
+      borderRadius,
+      borderWidth,
+      height,
+    ]);
 
     const getVariantStyles = React.useCallback((): React.CSSProperties => {
       const variants: Record<string, React.CSSProperties> = {
         'animated-subscribe': {
-          backgroundColor: isSubscribed ? '#6b7280' : '#ec4899',
-          borderColor: 'transparent',
-          color: '#ffffff',
+          backgroundColor:
+            backgroundColor || (isSubscribed ? '#6b7280' : '#ec4899'),
+          borderColor: borderColor || 'transparent',
+          color: textColor || '#ffffff',
         },
         danger: {
           backgroundColor: backgroundColor || '#dc2626',
@@ -272,7 +291,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         },
         ghost: {
           backgroundColor: backgroundColor || 'transparent',
-          borderColor: 'transparent',
+          borderColor: borderColor || 'transparent',
           color: textColor || '#374151',
         },
         'hover-reveal': {
@@ -324,6 +343,83 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
       return variants[variant] || variants.primary;
     }, [variant, backgroundColor, textColor, borderColor, isSubscribed]);
+
+    // const getHoverStyles = React.useCallback((): React.CSSProperties => {
+    //   if (isDisabled || !isHovered) return {};
+
+    //   const hoverStyles: React.CSSProperties = {};
+
+    //   // Apply hover background color
+    //   if (_hoverBackgroundColor) {
+    //     hoverStyles.backgroundColor = _hoverBackgroundColor;
+    //   }
+
+    //   // Apply hover text color
+    //   if (_hoverTextColor) {
+    //     hoverStyles.color = _hoverTextColor;
+    //   }
+
+    //   // Apply hover border color
+    //   if (_hoverBorderColor) {
+    //     hoverStyles.borderColor = _hoverBorderColor;
+    //   }
+
+    //   // Default hover effects for each variant
+    //   if (!_hoverBackgroundColor && !_hoverTextColor && !_hoverBorderColor) {
+    //     const variantHoverEffects: Record<string, React.CSSProperties> = {
+    //       danger: {
+    //         backgroundColor: '#b91c1c',
+    //         boxShadow: '0 4px 12px rgba(220, 38, 38, 0.4)',
+    //         transform: 'translateY(-1px)',
+    //       },
+    //       ghost: {
+    //         backgroundColor: '#f3f4f6',
+    //       },
+    //       outline: {
+    //         backgroundColor: '#f3f4f6',
+    //         borderColor: '#9ca3af',
+    //       },
+    //       primary: {
+    //         backgroundColor: '#1d4ed8',
+    //         boxShadow: '0 4px 12px rgba(37, 99, 235, 0.4)',
+    //         transform: 'translateY(-1px)',
+    //       },
+    //       secondary: {
+    //         backgroundColor: '#d1d5db',
+    //         color: '#111827',
+    //       },
+    //       success: {
+    //         backgroundColor: '#047857',
+    //         boxShadow: '0 4px 12px rgba(5, 150, 105, 0.4)',
+    //         transform: 'translateY(-1px)',
+    //       },
+    //       warning: {
+    //         backgroundColor: '#b45309',
+    //         boxShadow: '0 4px 12px rgba(217, 119, 6, 0.4)',
+    //         transform: 'translateY(-1px)',
+    //       },
+    //     };
+
+    //     return variantHoverEffects[variant] || {};
+    //   }
+
+    //   return hoverStyles;
+    // }, [
+    //   isDisabled,
+    //   isHovered,
+    //   _hoverBackgroundColor,
+    //   _hoverTextColor,
+    //   _hoverBorderColor,
+    //   variant,
+    // ]);
+
+    const handleMouseEnter = React.useCallback(() => {
+      setIsHovered(true);
+    }, []);
+
+    const handleMouseLeave = React.useCallback(() => {
+      setIsHovered(false);
+    }, []);
 
     const handleMouseMove = React.useCallback(
       (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -416,11 +512,15 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             { style: { display: 'flex', flexShrink: 0 } },
             leftIcon
           ),
+        loading && loadingPosition === 'start' && finalLoadingIndicator,
         React.createElement(
           'span',
-          { style: { opacity: loading ? 0 : 1 } },
+          {
+            style: { opacity: loading && loadingPosition === 'center' ? 0 : 1 },
+          },
           children
         ),
+        loading && loadingPosition === 'end' && finalLoadingIndicator,
         endIcon &&
           React.createElement(
             'span',
@@ -443,19 +543,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       () => ({
         ...getBaseStyles(),
         ...getVariantStyles(),
+        // ...getHoverStyles(),
         ...style,
-        ...(borderRadius && { borderRadius }),
-        ...(borderWidth && { borderWidth }),
-        ...(height && { height }),
       }),
-      [
-        getBaseStyles,
-        getVariantStyles,
-        style,
-        borderRadius,
-        borderWidth,
-        height,
-      ]
+      [getBaseStyles, getVariantStyles, style]
     );
 
     return React.createElement(
@@ -472,11 +563,31 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         onClick: handleClick,
         onFocus,
         onKeyDown: handleKeyDown,
+        onMouseEnter: handleMouseEnter,
+        onMouseLeave: handleMouseLeave,
         onMouseMove: handleMouseMove,
         ref: buttonRef,
         role,
         style: finalStyles,
       },
+      // Hover reveal effect overlay
+      variant === 'hover-reveal' &&
+        !isDisabled &&
+        React.createElement('span', {
+          style: {
+            backgroundColor:
+              _hoverBackgroundColor || 'rgba(255, 255, 255, 0.1)',
+            bottom: 0,
+            left: 0,
+            pointerEvents: 'none',
+            position: 'absolute',
+            right: 0,
+            top: isHovered ? 0 : '100%',
+            transition: 'top 0.3s ease-in-out',
+            zIndex: 1,
+          },
+        }),
+
       // Interactive hover blob
       variant === 'interactive-hover' &&
         !isDisabled &&
@@ -484,15 +595,15 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           style: {
             background: 'rgba(255, 255, 255, 0.15)',
             borderRadius: '50%',
-            height: '24px',
+            height: isHovered ? '80px' : '24px',
             left: hoverPosition.x,
             pointerEvents: 'none',
             position: 'absolute',
             top: hoverPosition.y,
             transform: 'translate(-50%, -50%)',
             transition: 'width 0.3s ease, height 0.3s ease',
-            width: '24px',
-            zIndex: 0,
+            width: isHovered ? '80px' : '24px',
+            zIndex: 1,
           },
         }),
 
@@ -511,44 +622,26 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             top: 0,
             transform: 'skewX(-20deg)',
             width: '200%',
+            zIndex: 1,
           },
         }),
 
-      // Loading indicators
-      loading &&
-        loadingPosition !== 'center' &&
-        React.createElement(
-          'div',
-          {
-            style: {
-              alignItems: 'center',
-              display: 'flex',
-              inset: 0,
-              justifyContent:
-                loadingPosition === 'start' ? 'flex-start' : 'flex-end',
-              paddingLeft: loadingPosition === 'start' ? '16px' : '0',
-              paddingRight: loadingPosition === 'end' ? '16px' : '0',
-              position: 'absolute',
-            },
+      // Focus ring
+      active &&
+        _focusRingColor &&
+        React.createElement('span', {
+          style: {
+            border: `2px solid ${_focusRingColor}`,
+            borderRadius: 'inherit',
+            bottom: '-4px',
+            left: '-4px',
+            pointerEvents: 'none',
+            position: 'absolute',
+            right: '-4px',
+            top: '-4px',
+            zIndex: -1,
           },
-          finalLoadingIndicator
-        ),
-
-      loading &&
-        loadingPosition === 'center' &&
-        React.createElement(
-          'div',
-          {
-            style: {
-              alignItems: 'center',
-              display: 'flex',
-              inset: 0,
-              justifyContent: 'center',
-              position: 'absolute',
-            },
-          },
-          finalLoadingIndicator
-        ),
+        }),
 
       renderContent()
     );
