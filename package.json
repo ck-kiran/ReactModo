@@ -1,7 +1,7 @@
 {
   "name": "reactmodo",
-  "version": "1.0.3",
-  "description": "A **React-based UI component library** built for speed, customization, and accessibility.",
+  "version": "1.0.11",
+  "description": "A React-based UI component library built for speed, customization, and accessibility.",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
@@ -14,14 +14,16 @@
     ".": {
       "types": "./dist/types/index.d.ts",
       "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js"
-    }
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/cjs/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "scripts": {
     "prepare": "husky",
     "build": "npm run clean && npm run build:types && npm run build:esm && npm run build:cjs",
-    "build:esm": "rspack --config rspack.config.esm.js",
-    "build:cjs": "rspack --config rspack.config.cjs.js",
+    "build:esm": "rspack build --config rspack.config.esm.js",
+    "build:cjs": "rspack build --config rspack.config.cjs.js",
     "build:types": "tsc --emitDeclarationOnly --outDir dist/types",
     "clean": "rimraf dist",
     "dev": "rspack serve --config rspack.config.dev.js",
@@ -47,6 +49,11 @@
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
   },
+  "peerDependenciesMeta": {
+    "react-dom": {
+      "optional": true
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ck-kiran/ReactBricks.git"
@@ -57,7 +64,8 @@
     "ui",
     "button",
     "typescript",
-    "rspack"
+    "rspack",
+    "component-library"
   ],
   "author": "Kiran C",
   "license": "ISC",

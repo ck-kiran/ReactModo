@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const path = require('path');
 const baseConfig = require('./rspack.config.base');
 
@@ -12,5 +13,5 @@ module.exports = {
     clean: true,
   },
   mode: 'production',
-  target: 'node', // Better for CJS builds
+  target: ['web', 'es5'], // Better compatibility
 };

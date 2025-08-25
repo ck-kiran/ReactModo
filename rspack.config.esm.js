@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const path = require('path');
 const baseConfig = require('./rspack.config.base');
 
@@ -15,5 +16,5 @@ module.exports = {
     outputModule: true,
   },
   mode: 'production',
-  target: 'web', // Better for ESM builds
+  target: ['web', 'es2020'], // Modern target for ESM
 };

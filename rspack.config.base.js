@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 const path = require('path');
 
 module.exports = {
@@ -29,6 +31,7 @@ module.exports = {
       },
     ],
   },
+  // Properly externalize React for library builds
   externals: {
     react: {
       commonjs: 'react',
@@ -41,6 +44,12 @@ module.exports = {
       commonjs2: 'react-dom',
       amd: 'react-dom',
       root: 'ReactDOM',
+    },
+    'react/jsx-runtime': {
+      commonjs: 'react/jsx-runtime',
+      commonjs2: 'react/jsx-runtime',
+      amd: 'react/jsx-runtime',
+      root: ['React', 'jsx'],
     },
   },
   optimization: {

@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import * as React from 'react';
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'color'> {
   _focusRingColor?: string;
   _hoverBackgroundColor?: string;
   _hoverBorderColor?: string;
@@ -16,7 +16,6 @@ export interface ButtonProps
   borderRadius?: string;
   borderWidth?: string;
   children: React.ReactNode;
-  classes?: object;
   color?: ButtonColor;
   component?: React.ElementType;
   disabled?: boolean;
@@ -63,455 +62,465 @@ type ButtonColor =
   | 'warning'
   | string;
 
-export const Button: React.FC<ButtonProps> = ({
-  _focusRingColor,
-  _hoverBackgroundColor,
-  _hoverBorderColor,
-  _hoverTextColor,
+// Keyframes as a constant to avoid re-injecting
+const KEYFRAMES = `
+  @keyframes reactmodo-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes reactmodo-ripple {
+    to { transform: scale(4); opacity: 0; }
+  }
+  @keyframes reactmodo-shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+`;
 
-  active = false,
-  ariaDescribedBy,
-  ariaLabel,
-  ariaPressed,
+let stylesInjected = false;
 
-  backgroundColor,
-  borderColor,
-  borderRadius,
-  borderWidth,
+const injectStyles = () => {
+  if (stylesInjected || typeof document === 'undefined') return;
 
-  children,
-  className = '',
-  component,
-  disabled = false,
-  disableElevation = false,
-  disableRipple = false,
-  endIcon,
-  fullWidth = false,
-  height,
-  href,
-  leftIcon,
-  loading = false,
-  loadingIndicator = (
-    <span
-      style={{
-        animation: 'reactmodo-spin 1s linear infinite',
-        border: '2px solid currentColor',
-        borderRadius: '50%',
-        borderTop: '2px solid transparent',
-        display: 'inline-block',
-        height: '16px',
-        width: '16px',
-      }}
-    />
-  ),
-  loadingPosition = 'center',
-  onBlur,
-  onClick,
-  onFocus,
-  onKeyDown,
-  onMouseMove,
-  padding,
-  role = 'button',
-  size = 'medium',
-  style = {},
-  textColor,
-  variant = 'primary',
-  width,
-  ...props
-}) => {
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
+  const styleId = 'reactmodo-keyframes';
+  if (document.getElementById(styleId)) {
+    stylesInjected = true;
+    return;
+  }
 
-  // Ripple effect logic
-  useEffect(() => {
-    if (variant !== 'ripple' || disableRipple || !buttonRef.current) return;
+  const style = document.createElement('style');
+  style.id = styleId;
+  style.textContent = KEYFRAMES;
+  document.head.appendChild(style);
+  stylesInjected = true;
+};
 
-    const button = buttonRef.current;
-    const createRipple = (event: MouseEvent) => {
-      const circle = document.createElement('span');
-      const diameter = Math.max(button.clientWidth, button.clientHeight);
-      const radius = diameter / 2;
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      _focusRingColor,
+      _hoverBackgroundColor,
+      _hoverBorderColor,
+      _hoverTextColor,
 
-      Object.assign(circle.style, {
-        animation: 'reactmodo-ripple 600ms linear',
-        backgroundColor: textColor || 'rgba(255, 255, 255, 0.7)',
-        borderRadius: '50%',
-        height: `${diameter}px`,
-        left: `${event.clientX - button.offsetLeft - radius}px`,
-        pointerEvents: 'none',
-        position: 'absolute',
-        top: `${event.clientY - button.offsetTop - radius}px`,
-        transform: 'scale(0)',
-        width: `${diameter}px`,
-      });
+      active = false,
+      ariaDescribedBy,
+      ariaLabel,
+      ariaPressed,
 
-      const existingRipple = button.querySelector('.reactmodo-ripple-effect');
-      if (existingRipple) existingRipple.remove();
+      backgroundColor,
+      borderColor,
+      borderRadius,
+      borderWidth,
 
-      circle.className = 'reactmodo-ripple-effect';
-      button.appendChild(circle);
+      children,
+      className = '',
+      component,
+      disabled = false,
+      disableElevation = false,
+      disableRipple = false,
+      endIcon,
+      fullWidth = false,
+      height,
+      href,
+      leftIcon,
+      loading = false,
+      loadingIndicator,
+      loadingPosition = 'center',
+      onBlur,
+      onClick,
+      onFocus,
+      onKeyDown,
+      onMouseMove,
+      padding,
+      role = 'button',
+      size = 'medium',
+      style = {},
+      textColor,
+      variant = 'primary',
+      width,
+      ...props
+    },
+    ref
+  ) => {
+    const [isSubscribed, setIsSubscribed] = React.useState(false);
+    const [hoverPosition, setHoverPosition] = React.useState({ x: 0, y: 0 });
+    const buttonRef = React.useRef<HTMLButtonElement>(null);
 
-      setTimeout(() => {
-        if (circle.parentNode) {
-          circle.parentNode.removeChild(circle);
+    // Merge refs
+    React.useImperativeHandle(ref, () => buttonRef.current!);
+
+    // Default loading indicator
+    const defaultLoadingIndicator = React.useMemo(
+      () =>
+        React.createElement('span', {
+          style: {
+            animation: 'reactmodo-spin 1s linear infinite',
+            border: '2px solid currentColor',
+            borderRadius: '50%',
+            borderTop: '2px solid transparent',
+            display: 'inline-block',
+            height: '16px',
+            width: '16px',
+          },
+        }),
+      []
+    );
+
+    const finalLoadingIndicator = loadingIndicator || defaultLoadingIndicator;
+
+    // Inject styles on mount
+    React.useEffect(() => {
+      injectStyles();
+    }, []);
+
+    // Ripple effect logic
+    React.useEffect(() => {
+      if (variant !== 'ripple' || disableRipple || !buttonRef.current) return;
+
+      const button = buttonRef.current;
+      const createRipple = (event: MouseEvent) => {
+        const circle = document.createElement('span');
+        const diameter = Math.max(button.clientWidth, button.clientHeight);
+        const radius = diameter / 2;
+
+        Object.assign(circle.style, {
+          animation: 'reactmodo-ripple 600ms linear',
+          backgroundColor: textColor || 'rgba(255, 255, 255, 0.7)',
+          borderRadius: '50%',
+          height: `${diameter}px`,
+          left: `${event.clientX - button.offsetLeft - radius}px`,
+          pointerEvents: 'none',
+          position: 'absolute',
+          top: `${event.clientY - button.offsetTop - radius}px`,
+          transform: 'scale(0)',
+          width: `${diameter}px`,
+          zIndex: '0',
+        });
+
+        const existingRipple = button.querySelector('.reactmodo-ripple-effect');
+        if (existingRipple) existingRipple.remove();
+
+        circle.className = 'reactmodo-ripple-effect';
+        button.appendChild(circle);
+
+        setTimeout(() => {
+          if (circle.parentNode) {
+            circle.parentNode.removeChild(circle);
+          }
+        }, 600);
+      };
+
+      button.addEventListener('click', createRipple);
+      return () => button.removeEventListener('click', createRipple);
+    }, [variant, disableRipple, textColor]);
+
+    const RootComponent = component || (href ? 'a' : 'button');
+    const isDisabled = disabled || loading;
+
+    const getBaseStyles = React.useCallback((): React.CSSProperties => {
+      const sizeMap = {
+        large: { fontSize: '18px', padding: '12px 24px' },
+        medium: { fontSize: '16px', padding: '8px 16px' },
+        small: { fontSize: '14px', padding: '6px 12px' },
+      };
+
+      const sizeStyles =
+        sizeMap[size as keyof typeof sizeMap] || sizeMap.medium;
+
+      return {
+        alignItems: 'center',
+        border: '1px solid transparent',
+        borderRadius: '6px',
+        cursor: isDisabled ? 'not-allowed' : 'pointer',
+        display: 'inline-flex',
+        fontFamily: 'inherit',
+        fontSize: sizeStyles.fontSize,
+        fontWeight: '500',
+        gap: '8px',
+        justifyContent: 'center',
+        lineHeight: '1.5',
+        opacity: isDisabled ? 0.6 : 1,
+        outline: 'none',
+        overflow: 'hidden',
+        position: 'relative',
+        textDecoration: 'none',
+        transition: 'all 0.2s ease-in-out',
+        width: fullWidth ? '100%' : width || 'auto',
+        ...(padding ? { padding } : { padding: sizeStyles.padding }),
+        ...(!disableElevation && {
+          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+        }),
+        ...(active && {
+          boxShadow:
+            '0 0 0 2px rgba(59, 130, 246, 0.5), 0 0 0 4px rgba(59, 130, 246, 0.1)',
+        }),
+      };
+    }, [size, padding, isDisabled, fullWidth, width, disableElevation, active]);
+
+    const getVariantStyles = React.useCallback((): React.CSSProperties => {
+      const variants: Record<string, React.CSSProperties> = {
+        'animated-subscribe': {
+          backgroundColor: isSubscribed ? '#6b7280' : '#ec4899',
+          borderColor: 'transparent',
+          color: '#ffffff',
+        },
+        danger: {
+          backgroundColor: backgroundColor || '#dc2626',
+          borderColor: borderColor || '#dc2626',
+          color: textColor || '#ffffff',
+        },
+        ghost: {
+          backgroundColor: backgroundColor || 'transparent',
+          borderColor: 'transparent',
+          color: textColor || '#374151',
+        },
+        'hover-reveal': {
+          backgroundColor: backgroundColor || '#000000',
+          borderColor: borderColor || '#000000',
+          color: textColor || '#ffffff',
+        },
+        'interactive-hover': {
+          backgroundColor: backgroundColor || '#000000',
+          borderColor: borderColor || '#000000',
+          color: textColor || '#ffffff',
+        },
+        outline: {
+          backgroundColor: backgroundColor || 'transparent',
+          borderColor: borderColor || '#d1d5db',
+          color: textColor || '#374151',
+        },
+        primary: {
+          backgroundColor: backgroundColor || '#2563eb',
+          borderColor: borderColor || '#2563eb',
+          color: textColor || '#ffffff',
+        },
+        ripple: {
+          backgroundColor: backgroundColor || '#7c3aed',
+          borderColor: borderColor || '#7c3aed',
+          color: textColor || '#ffffff',
+        },
+        secondary: {
+          backgroundColor: backgroundColor || '#e5e7eb',
+          borderColor: borderColor || '#d1d5db',
+          color: textColor || '#374151',
+        },
+        shimmer: {
+          backgroundColor: backgroundColor || '#1f2937',
+          borderColor: borderColor || '#1f2937',
+          color: textColor || '#ffffff',
+        },
+        success: {
+          backgroundColor: backgroundColor || '#059669',
+          borderColor: borderColor || '#059669',
+          color: textColor || '#ffffff',
+        },
+        warning: {
+          backgroundColor: backgroundColor || '#d97706',
+          borderColor: borderColor || '#d97706',
+          color: textColor || '#ffffff',
+        },
+      };
+
+      return variants[variant] || variants.primary;
+    }, [variant, backgroundColor, textColor, borderColor, isSubscribed]);
+
+    const handleMouseMove = React.useCallback(
+      (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (variant === 'interactive-hover') {
+          const rect = e.currentTarget.getBoundingClientRect();
+          setHoverPosition({
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top,
+          });
         }
-      }, 600);
-    };
+        if (onMouseMove) onMouseMove(e);
+      },
+      [variant, onMouseMove]
+    );
 
-    button.addEventListener('click', createRipple);
-    return () => button.removeEventListener('click', createRipple);
-  }, [variant, disableRipple, textColor]);
+    const handleKeyDown = React.useCallback(
+      (e: React.KeyboardEvent<HTMLButtonElement>) => {
+        if (
+          (e.key === 'Enter' || e.key === ' ') &&
+          RootComponent === 'button'
+        ) {
+          e.preventDefault();
+          if (onClick && !isDisabled)
+            onClick(e as unknown as React.MouseEvent<HTMLButtonElement>);
+        }
+        if (onKeyDown) onKeyDown(e);
+      },
+      [onClick, onKeyDown, isDisabled, RootComponent]
+    );
 
-  const RootComponent = component || (href ? 'a' : 'button');
-  const isDisabled = disabled || loading;
+    const handleClick = React.useCallback(
+      (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (variant === 'animated-subscribe') setIsSubscribed(prev => !prev);
+        if (!isDisabled && onClick) onClick(e);
+      },
+      [variant, isDisabled, onClick]
+    );
 
-  const getBaseStyles = (): React.CSSProperties => ({
-    alignItems: 'center',
-    border: '1px solid transparent',
-    borderRadius: '6px',
-    cursor: isDisabled ? 'not-allowed' : 'pointer',
-    display: 'inline-flex',
-    fontFamily: 'inherit',
-    fontSize: 'inherit',
-    fontWeight: '500',
-    gap: '8px',
-    justifyContent: 'center',
-    lineHeight: '1.5',
-    opacity: isDisabled ? 0.6 : 1,
-    outline: 'none',
-    overflow: 'hidden',
-    position: 'relative',
-    textDecoration: 'none',
-    transition: 'all 0.2s ease-in-out',
-    width: fullWidth ? '100%' : width || 'auto',
-    ...(padding ? {} : getSizeStyles()),
-    ...(!disableElevation && {
-      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    }),
-    ...getVariantStyles(),
-    ...(active && {
-      boxShadow:
-        '0 0 0 2px rgba(59, 130, 246, 0.5), 0 0 0 4px rgba(59, 130, 246, 0.1)',
-    }),
-  });
+    const renderContent = React.useCallback(() => {
+      if (loading && loadingPosition === 'center') return finalLoadingIndicator;
 
-  const getSizeStyles = (): React.CSSProperties => {
-    const sizeMap = {
-      large: { fontSize: '18px', padding: '12px 24px' },
-      medium: { fontSize: '16px', padding: '8px 16px' },
-      small: { fontSize: '14px', padding: '6px 12px' },
-    };
-    return sizeMap[size as keyof typeof sizeMap] || sizeMap.medium;
-  };
+      if (variant === 'animated-subscribe') {
+        return React.createElement(
+          'div',
+          {
+            style: {
+              alignItems: 'center',
+              display: 'flex',
+              gap: '8px',
+              position: 'relative',
+              zIndex: 10,
+            },
+          },
+          React.createElement(
+            'svg',
+            {
+              fill: 'none',
+              height: '20',
+              stroke: 'currentColor',
+              strokeLinecap: 'round',
+              strokeLinejoin: 'round',
+              strokeWidth: '2',
+              viewBox: '0 0 24 24',
+              width: '20',
+            },
+            React.createElement('path', { d: 'M5 12l5 5l10 -10' })
+          ),
+          React.createElement(
+            'span',
+            null,
+            isSubscribed ? 'Subscribed' : 'Subscribe'
+          )
+        );
+      }
 
-  const getVariantStyles = (): React.CSSProperties => {
-    const variants: Record<string, React.CSSProperties> = {
-      'animated-subscribe': {
-        backgroundColor: isSubscribed ? '#6b7280' : '#ec4899',
-        borderColor: 'transparent',
-        color: '#ffffff',
-      },
-      danger: {
-        backgroundColor: backgroundColor || '#dc2626',
-        borderColor: borderColor || '#dc2626',
-        color: textColor || '#ffffff',
-      },
-      ghost: {
-        backgroundColor: backgroundColor || 'transparent',
-        borderColor: 'transparent',
-        color: textColor || '#374151',
-      },
-      'hover-reveal': {
-        backgroundColor: backgroundColor || '#000000',
-        borderColor: borderColor || '#000000',
-        color: textColor || '#ffffff',
-      },
-      'interactive-hover': {
-        backgroundColor: backgroundColor || '#000000',
-        borderColor: borderColor || '#000000',
-        color: textColor || '#ffffff',
-      },
-      outline: {
-        backgroundColor: backgroundColor || 'transparent',
-        borderColor: borderColor || '#d1d5db',
-        color: textColor || '#374151',
-      },
-      primary: {
-        backgroundColor: backgroundColor || '#2563eb',
-        borderColor: borderColor || '#2563eb',
-        color: textColor || '#ffffff',
-      },
-      ripple: {
-        backgroundColor: backgroundColor || '#7c3aed',
-        borderColor: borderColor || '#7c3aed',
-        color: textColor || '#ffffff',
-      },
-      secondary: {
-        backgroundColor: backgroundColor || '#e5e7eb',
-        borderColor: borderColor || '#d1d5db',
-        color: textColor || '#374151',
-      },
-      shimmer: {
-        backgroundColor: backgroundColor || '#1f2937',
-        borderColor: borderColor || '#1f2937',
-        color: textColor || '#ffffff',
-      },
-      success: {
-        backgroundColor: backgroundColor || '#059669',
-        borderColor: borderColor || '#059669',
-        color: textColor || '#ffffff',
-      },
-      warning: {
-        backgroundColor: backgroundColor || '#d97706',
-        borderColor: borderColor || '#d97706',
-        color: textColor || '#ffffff',
-      },
-    };
-
-    return variants[variant] || variants.primary;
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (variant === 'interactive-hover') {
-      const rect = e.currentTarget.getBoundingClientRect();
-      setHoverPosition({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      });
-    }
-    if (onMouseMove) onMouseMove(e);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-    if ((e.key === 'Enter' || e.key === ' ') && RootComponent === 'button') {
-      e.preventDefault();
-      if (onClick && !isDisabled)
-        onClick(e as unknown as React.MouseEvent<HTMLButtonElement>);
-    }
-    if (onKeyDown) onKeyDown(e);
-  };
-
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (variant === 'animated-subscribe') setIsSubscribed(prev => !prev);
-    if (!isDisabled && onClick) onClick(e);
-  };
-
-  const renderContent = () => {
-    if (loading && loadingPosition === 'center') return loadingIndicator;
-
-    if (variant === 'animated-subscribe') {
-      return (
-        <div
-          style={{
+      return React.createElement(
+        'div',
+        {
+          style: {
             alignItems: 'center',
             display: 'flex',
             gap: '8px',
             position: 'relative',
             zIndex: 10,
-          }}
-        >
-          <svg
-            fill="none"
-            height="20"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-            width="20"
-          >
-            <path d="M5 12l5 5l10 -10" />
-          </svg>
-          <span>{isSubscribed ? 'Subscribed' : 'Subscribe'}</span>
-        </div>
+          },
+        },
+        leftIcon &&
+          React.createElement(
+            'span',
+            { style: { display: 'flex', flexShrink: 0 } },
+            leftIcon
+          ),
+        React.createElement(
+          'span',
+          { style: { opacity: loading ? 0 : 1 } },
+          children
+        ),
+        endIcon &&
+          React.createElement(
+            'span',
+            { style: { display: 'flex', flexShrink: 0 } },
+            endIcon
+          )
       );
-    }
+    }, [
+      loading,
+      loadingPosition,
+      finalLoadingIndicator,
+      variant,
+      isSubscribed,
+      leftIcon,
+      children,
+      endIcon,
+    ]);
 
-    return (
-      <div
-        style={{
-          alignItems: 'center',
-          display: 'flex',
-          gap: '8px',
-          position: 'relative',
-          zIndex: 10,
-        }}
-      >
-        {leftIcon && (
-          <span style={{ display: 'flex', flexShrink: 0 }}>{leftIcon}</span>
-        )}
-        <span style={{ opacity: loading ? 0 : 1 }}>{children}</span>
-        {endIcon && (
-          <span style={{ display: 'flex', flexShrink: 0 }}>{endIcon}</span>
-        )}
-      </div>
+    const finalStyles: React.CSSProperties = React.useMemo(
+      () => ({
+        ...getBaseStyles(),
+        ...getVariantStyles(),
+        ...style,
+        ...(borderRadius && { borderRadius }),
+        ...(borderWidth && { borderWidth }),
+        ...(height && { height }),
+      }),
+      [
+        getBaseStyles,
+        getVariantStyles,
+        style,
+        borderRadius,
+        borderWidth,
+        height,
+      ]
     );
-  };
 
-  const finalStyles: React.CSSProperties = {
-    ...getBaseStyles(),
-    ...style,
-    ...(backgroundColor && { backgroundColor }),
-    ...(textColor && { color: textColor }),
-    ...(borderColor && { borderColor }),
-    ...(borderWidth && { borderWidth }),
-    ...(borderRadius && { borderRadius }),
-    ...(padding && { padding }),
-    ...(width && { width }),
-    ...(height && { height }),
-  };
+    return React.createElement(
+      RootComponent,
+      {
+        ...props,
+        'aria-describedby': ariaDescribedBy,
+        'aria-label': ariaLabel,
+        'aria-pressed': ariaPressed,
+        className,
+        disabled: isDisabled,
+        href,
+        onBlur,
+        onClick: handleClick,
+        onFocus,
+        onKeyDown: handleKeyDown,
+        onMouseMove: handleMouseMove,
+        ref: buttonRef,
+        role,
+        style: finalStyles,
+      },
+      // Interactive hover blob
+      variant === 'interactive-hover' &&
+        !isDisabled &&
+        React.createElement('span', {
+          style: {
+            background: 'rgba(255, 255, 255, 0.15)',
+            borderRadius: '50%',
+            height: '24px',
+            left: hoverPosition.x,
+            pointerEvents: 'none',
+            position: 'absolute',
+            top: hoverPosition.y,
+            transform: 'translate(-50%, -50%)',
+            transition: 'width 0.3s ease, height 0.3s ease',
+            width: '24px',
+            zIndex: 0,
+          },
+        }),
 
-  return (
-    <>
-      {/* Inject keyframes only once */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-          @keyframes reactmodo-spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-          @keyframes reactmodo-ripple {
-            to { transform: scale(4); opacity: 0; }
-          }
-          @keyframes reactmodo-shimmer {
-            0% { left: -100%; }
-            100% { left: 100%; }
-          }
-        `,
-        }}
-      />
+      // Shimmer effect
+      variant === 'shimmer' &&
+        !isDisabled &&
+        React.createElement('span', {
+          style: {
+            animation: 'reactmodo-shimmer 1.5s infinite',
+            background:
+              'linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent)',
+            height: '100%',
+            left: '-100%',
+            pointerEvents: 'none',
+            position: 'absolute',
+            top: 0,
+            transform: 'skewX(-20deg)',
+            width: '200%',
+          },
+        }),
 
-      <RootComponent
-        {...props}
-        aria-describedby={ariaDescribedBy}
-        aria-label={ariaLabel}
-        aria-pressed={ariaPressed}
-        className={className}
-        disabled={isDisabled}
-        href={href}
-        onBlur={onBlur}
-        // onBlur={e => {
-        //   if (!isDisabled) {
-        //     e.currentTarget.style.boxShadow =
-        //       (finalStyles.boxShadow as string) || '';
-        //   }
-        //   if (onBlur) onBlur(e);
-        // }}
-        onClick={handleClick}
-        onFocus={onFocus}
-        // onFocus={e => {
-        //   if (!isDisabled) {
-        //     const focusColor = _focusRingColor || '#3b82f6';
-        //     e.currentTarget.style.boxShadow = `0 0 0 2px ${focusColor}40, 0 0 0 4px ${focusColor}20`;
-        //   }
-        //   if (onFocus) onFocus(e);
-        // }}
-        onKeyDown={handleKeyDown}
-        onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-          if (!isDisabled && variant === 'hover-reveal') {
-            e.currentTarget.style.backgroundColor =
-              _hoverBackgroundColor || '#ffffff';
-            e.currentTarget.style.color = _hoverTextColor || '#000000';
-          } else if (!isDisabled && variant === 'ghost') {
-            e.currentTarget.style.backgroundColor =
-              _hoverBackgroundColor || '#f3f4f6';
-          } else if (!isDisabled && variant === 'outline') {
-            e.currentTarget.style.backgroundColor =
-              _hoverBackgroundColor || '#f9fafb';
-          } else if (!isDisabled && !backgroundColor) {
-            const currentBg = finalStyles.backgroundColor as string;
-            if (currentBg) {
-              e.currentTarget.style.backgroundColor = darkenColor(
-                currentBg,
-                0.1
-              );
-            }
-          }
-          if (_hoverBorderColor && !isDisabled) {
-            e.currentTarget.style.borderColor = _hoverBorderColor;
-          }
-        }}
-        onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-          if (!isDisabled) {
-            e.currentTarget.style.backgroundColor =
-              finalStyles.backgroundColor as string;
-            e.currentTarget.style.color = finalStyles.color as string;
-            e.currentTarget.style.borderColor =
-              finalStyles.borderColor as string;
-          }
-        }}
-        onMouseMove={handleMouseMove}
-        ref={buttonRef}
-        role={role}
-        style={{
-          ...finalStyles,
-          ...(variant === 'shimmer' &&
-            ({
-              '::after': {
-                animation: 'reactmodo-shimmer 1.5s infinite',
-                background:
-                  'linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent)',
-                content: '""',
-                height: '100%',
-                left: '-100%',
-                position: 'absolute',
-                top: 0,
-                transform: 'skewX(-20deg)',
-                width: '200%',
-              },
-            } as any)),
-        }}
-      >
-        {/* Interactive hover blob */}
-        {variant === 'interactive-hover' && !isDisabled && (
-          // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-          <span
-            onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
-              if (buttonRef.current?.matches(':hover')) {
-                e.currentTarget.style.width = '200px';
-                e.currentTarget.style.height = '200px';
-              }
-            }}
-            style={{
-              background: 'rgba(255, 255, 255, 0.15)',
-              borderRadius: '50%',
-              height: '24px',
-              left: hoverPosition.x,
-              pointerEvents: 'none',
-              position: 'absolute',
-              top: hoverPosition.y,
-              transform: 'translate(-50%, -50%)',
-              transition: 'width 0.3s ease, height 0.3s ease',
-              width: '24px',
-              zIndex: 0,
-            }}
-          />
-        )}
-
-        {/* Shimmer effect */}
-        {variant === 'shimmer' && !isDisabled && (
-          <span
-            style={{
-              animation: 'reactmodo-shimmer 1.5s infinite',
-              background:
-                'linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent)',
-              height: '100%',
-              left: '-100%',
-              pointerEvents: 'none',
-              position: 'absolute',
-              top: 0,
-              transform: 'skewX(-20deg)',
-              width: '200%',
-            }}
-          />
-        )}
-
-        {/* Loading indicators */}
-        {loading && loadingPosition !== 'center' && (
-          <div
-            style={{
+      // Loading indicators
+      loading &&
+        loadingPosition !== 'center' &&
+        React.createElement(
+          'div',
+          {
+            style: {
               alignItems: 'center',
               display: 'flex',
               inset: 0,
@@ -520,42 +529,30 @@ export const Button: React.FC<ButtonProps> = ({
               paddingLeft: loadingPosition === 'start' ? '16px' : '0',
               paddingRight: loadingPosition === 'end' ? '16px' : '0',
               position: 'absolute',
-            }}
-          >
-            {loadingIndicator}
-          </div>
-        )}
+            },
+          },
+          finalLoadingIndicator
+        ),
 
-        {loading && loadingPosition === 'center' && (
-          <div
-            style={{
+      loading &&
+        loadingPosition === 'center' &&
+        React.createElement(
+          'div',
+          {
+            style: {
               alignItems: 'center',
               display: 'flex',
               inset: 0,
               justifyContent: 'center',
               position: 'absolute',
-            }}
-          >
-            {loadingIndicator}
-          </div>
-        )}
+            },
+          },
+          finalLoadingIndicator
+        ),
 
-        {renderContent()}
-      </RootComponent>
-    </>
-  );
-};
-
-// Helper function to darken colors
-const darkenColor = (color: string, amount: number): string => {
-  if (color.startsWith('#')) {
-    const num = parseInt(color.slice(1), 16);
-    const r = Math.max(0, (num >> 16) - Math.round(255 * amount));
-    const g = Math.max(0, ((num >> 8) & 0x00ff) - Math.round(255 * amount));
-    const b = Math.max(0, (num & 0x0000ff) - Math.round(255 * amount));
-    return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+      renderContent()
+    );
   }
-  return color;
-};
+);
 
-export default Button;
+Button.displayName = 'Button';
