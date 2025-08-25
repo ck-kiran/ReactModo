@@ -5,15 +5,22 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0 # Fetch all history for proper version detection
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18.x'
           registry-url: 'https://registry.npmjs.org'
@@ -28,7 +35,7 @@ jobs:
         id: version
         run: |
           # Get all commits since last release
-          COMMITS=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline || git log --oneline)
+          COMMITS=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline 2>/dev/null || git log --oneline)
 
           if echo "$COMMITS" | grep -i "breaking\|major"; then
             echo "BUMP=major" >> $GITHUB_OUTPUT
@@ -47,7 +54,7 @@ jobs:
         id: bump
         run: |
           OLD_VERSION=$(node -p "require('./package.json').version")
-          yarn version --${{ steps.version.outputs.BUMP }} --no-git-tag-version
+          npm version ${{ steps.version.outputs.BUMP }} --no-git-tag-version
           NEW_VERSION=$(node -p "require('./package.json').version")
           echo "OLD_VERSION=$OLD_VERSION" >> $GITHUB_OUTPUT
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
