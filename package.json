@@ -1,6 +1,6 @@
 {
   "name": "reactmodo",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A **React-based UI component library** built for speed, customization, and accessibility.   Currently under **active development**.",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
